@@ -1,17 +1,31 @@
 from tempfile import mkstemp
+from Bio.SeqFeature import SeqFeature, FeatureLocation
 
 __author__ = 'pmoreno'
 
 class NRPS2Parser(object):
 
     def __init__(self,pathToReport):
-        self.file=pathToReport
-        self.file.readLine()
+        self.file=open(pathToReport, "r")
+        # get rid of header
+        self.file.readline()
 
     def nextRegion(self):
+        line = self.file.readline()
+        if line is None or len(line) == 0:
+            return None
         id, sig, stachelhausCode, thirdClassPred, largeClassPred, smallClassPred, singleClassPred, \
             nearesStachehausCode, nrps1PredLargeClass, nrps2PredLargeClass, outsideAppDomain, coords, score \
-            = tuple(self.file.readLine().split(sep="\t"))
+            = tuple(line.strip().split("\t"))
+
+        start, stop = coords.split(":")
+        domain_loc = FeatureLocation(int(start), int(stop))
+        qual = { "score" : score,
+                 "name" : singleClassPred,
+                 "tool" : "NRPS2"}
+        domain_feat = SeqFeature(domain_loc, type="domain",
+                        strand=1, id=id+"_"+singleClassPred, qualifiers=qual)
+        return domain_feat
 
 
 class NRPS2PredRunner(object):
@@ -33,7 +47,8 @@ class NRPS2PredRunner(object):
         # First we write the seqRecord to a temporary fasta file
         fastaFile, fastaFilePath = mkstemp()
         from Bio import SeqIO
-        SeqIO.write(seqRecord, fastaFile, "fasta")
+        #print(seqRecord.format("fasta"))
+        SeqIO.write(seqRecord, fastaFilePath, "fasta")
 
         # Now we set up the call
         command = "java -Ddatadir="+self.path+"/data -cp "
@@ -50,6 +65,15 @@ class NRPS2PredRunner(object):
         execCode = call(command, shell=True)
 
         # Finally we parse the result and add sequence features to the seq record.
+        parser = NRPS2Parser(fastaFilePath+".nrps2Report")
+
+        while True:
+            seqFeat = parser.nextRegion()
+            if seqFeat is None:
+                break
+            seqRecord.features.append(seqFeat)
+
+
 
 
 
