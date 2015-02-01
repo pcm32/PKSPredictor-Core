@@ -15,9 +15,10 @@ if __name__ == '__main__':
     pathToOutput=sys.argv[3]
     pathToHMMBinary=sys.argv[4]
     pathToFuzzPro=sys.argv[5]
-    indexForSkips = 6
+    pathToNRPS2=sys.argv[6]
+    indexForSkips = 7
     allDomains = False
-    if len(sys.argv)>6 and sys.argv[6] == "allDomains":
+    if len(sys.argv)>7 and sys.argv[7] == "allDomains":
         ++indexForSkips
         allDomains = True
 
@@ -31,6 +32,7 @@ if __name__ == '__main__':
                               outPutPath=pathToOutput,
                               HMMBinaryPath=pathToHMMBinary,
                               fuzzProPath=pathToFuzzPro,
+                              NRPS2Path=pathToNRPS2,
                               allDomains=allDomains
                               )
     

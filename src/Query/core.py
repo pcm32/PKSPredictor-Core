@@ -8,7 +8,7 @@ from EMBOSS.core import FuzzProRunner
 
 class QueryRunner(object):
     
-    def __init__(self, fastaQuery, HMMModel, outPutPath, HMMBinaryPath, fuzzProPath, allDomains):
+    def __init__(self, fastaQuery, HMMModel, outPutPath, HMMBinaryPath, fuzzProPath, NRPS2Path, allDomains):
         self.fastaQuery = fastaQuery
         self.HMMModel = HMMModel
         self.outPutPath = outPutPath
@@ -16,6 +16,7 @@ class QueryRunner(object):
         self.fuzzProPath = fuzzProPath
         self.skipClade = list()
         self.useCutOff = False
+        self.nrps2Path = NRPS2Path
         self.allDomains = allDomains
 
     def useModelCutOff(self):
@@ -62,6 +63,8 @@ class QueryRunner(object):
         sequenceMarkers = list()
         sequenceMarkers.append(CladeFeatureMarker(self.outPutPath, self.HMMModel, self.HMMBinaryPath, self.skipClade,
                                                   self.useCutOff, self.allDomains))
+        sequenceMarkers.append(NRPSPred2FeatureMarker(self.nrps2Path))
+
         if self.fuzzProPath:
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "GAGTGx(75,85)[LV]HAT", "methyltransferase_p"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "PVIA", "crotonase_p_1"))
