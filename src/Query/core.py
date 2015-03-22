@@ -4,13 +4,16 @@ from hmmer.core import HMMERSuite, HMMERParse, HMMERModelBasedCutoffStore
 import re
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from EMBOSS.core import FuzzProRunner
+import tempfile
 
 
 class QueryRunner(object):
     
-    def __init__(self, fastaQuery, HMMModel, outPutPath, HMMBinaryPath, fuzzProPath, NRPS2Path, allDomains):
+    def __init__(self, fastaQuery, HMMModel, outPutPath,
+                 HMMBinaryPath, fuzzProPath, NRPS2Path, allDomains, HMMModelNonClades):
         self.fastaQuery = fastaQuery
         self.HMMModel = HMMModel
+        self.HMMModelNonClades = HMMModelNonClades
         self.outPutPath = outPutPath
         self.HMMBinaryPath = HMMBinaryPath
         self.fuzzProPath = fuzzProPath
@@ -64,6 +67,7 @@ class QueryRunner(object):
         sequenceMarkers.append(CladeFeatureMarker(self.outPutPath, self.HMMModel, self.HMMBinaryPath, self.skipClade,
                                                   self.useCutOff, self.allDomains))
         sequenceMarkers.append(NRPSPred2FeatureMarker(self.nrps2Path))
+        sequenceMarkers.append(HMMERHitFeatureMarker(self.HMMModelNonClades,self.HMMBinaryPath))
 
         if self.fuzzProPath:
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "GAGTGx(75,85)[LV]HAT", "methyltransferase_p"))
@@ -233,6 +237,37 @@ class NRPSPred2FeatureMarker(FeatureMarker):
 
     def markFeaturesInSequenceRecord(self, seqRecord):
         self.runner.run(seqRecord)
+
+class HMMERHitFeatureMarker(FeatureMarker):
+
+    def __init__(self, HMMModel, HMMBinaryPath):
+        self.outPutPath = tempfile.gettempdir()
+        self.HMMModel = HMMModel
+        self.hmmerExec = HMMERSuite(path=HMMBinaryPath)
+
+    def markFeaturesInSequenceRecord(self, seqAA):
+        indfastaPath=self.outPutPath+"Query_"+seqAA.id+".faa"
+        SeqIO.write(sequences=seqAA, handle=indfastaPath, format="fasta")
+        scanOutputPath=self.outPutPath+seqAA.id+"_hmmerRes.txt"
+        self.hmmerExec.runScan(query=indfastaPath, output=scanOutputPath, model=self.HMMModel)
+        hmmResFH = open(scanOutputPath,'r')
+        hmmParse = HMMERParse(hmmerScanFileHandle=hmmResFH, maxBestModels=10)
+        # check maxBestModels applicability
+        model = hmmParse.goToNextModelAlignments()
+        while model != None:
+            domainHit = hmmParse.nextAlignmentResult()
+            while domainHit != None:
+                domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
+                qual = {"evalue" : domainHit.getCEvalue(),
+                        "score" : domainHit.getScore(),
+                        "name" : model}
+                domain_feat = SeqFeature(domain_loc, type="domain", strand=1, id=model, qualifiers=qual)
+                seqAA.features.append(domain_feat)
+                domainHit = hmmParse.nextAlignmentResult()
+            model = hmmParse.nextAlignmentResult()
+
+
+
 
 class CladeFeatureMarker(FeatureMarker):
 
