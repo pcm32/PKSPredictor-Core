@@ -3,9 +3,9 @@ Created on Sep 24, 2011
 
 @author: pmoreno
 '''
+from __future__ import print_function
 import sys
 import getopt
-from __future__ import print_function
 from symbol import except_clause
 
 
