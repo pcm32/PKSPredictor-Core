@@ -30,6 +30,10 @@ def main():
     found_c = False
     found_o = False
 
+    pathToHMMModelOthers = ""
+    pathToHMMBinary = ""
+    pathToFuzzPro = ""
+
     try:
         opts, args = getopt.getopt(sys.argv[1:], "q:c:o:as:m:", ["HMMERPath=", "FuzzProPath=", "NRPS2Path="])
     except getopt.GetoptError as err:
