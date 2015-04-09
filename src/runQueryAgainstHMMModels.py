@@ -26,6 +26,9 @@ def usage():
 def main():
     from Query.core import QueryRunner
 
+    found_q = False
+    found_c = False
+    found_o = False
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "q:c:o:as:m:", ["HMMERPath=", "FuzzProPath=", "NRPS2Path="])
@@ -39,10 +42,13 @@ def main():
     for opt, arg in opts:
         if opt == "-q":
             pathToFastaQuery = arg  # 1
+            found_q = True
         elif opt == "-c":
             pathToHMMModel = arg  # 2
+            found_c = True
         elif opt == "-o":
             pathToOutput = arg # 3
+            found_o = True
         elif opt == "--HMMERPath":
             pathToHMMBinary = arg  # 4
         elif opt == "--FuzzProPath":
@@ -55,6 +61,10 @@ def main():
             modelsToSkip = arg.split(",")
         elif opt == "-m":
             pathToHMMModelOthers = arg
+
+    if not (found_c or found_q or found_o):
+        usage()
+        sys.exit(2)
 
 
     queryRunner = QueryRunner(fastaQuery=pathToFastaQuery,
