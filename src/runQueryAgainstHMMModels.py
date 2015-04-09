@@ -30,7 +30,7 @@ def main():
     found_c = False
     found_o = False
 
-    pathToHMMModelOthers = ""
+    pathToHMMModelOthers = None
     pathToHMMBinary = ""
     pathToFuzzPro = ""
 

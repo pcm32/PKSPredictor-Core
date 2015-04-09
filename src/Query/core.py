@@ -67,7 +67,8 @@ class QueryRunner(object):
         sequenceMarkers.append(CladeFeatureMarker(self.outPutPath, self.HMMModel, self.HMMBinaryPath, self.skipClade,
                                                   self.useCutOff, self.allDomains))
         sequenceMarkers.append(NRPSPred2FeatureMarker(self.nrps2Path))
-        sequenceMarkers.append(HMMERHitFeatureMarker(self.HMMModelNonClades, self.HMMBinaryPath))
+        if self.HMMModelNonClades is not None:
+            sequenceMarkers.append(HMMERHitFeatureMarker(self.HMMModelNonClades, self.HMMBinaryPath))
 
         if self.fuzzProPath:
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "GAGTGx(75,85)[LV]HAT", "methyltransferase_p"))
