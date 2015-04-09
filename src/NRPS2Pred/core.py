@@ -1,5 +1,6 @@
 from tempfile import mkstemp
 from Bio.SeqFeature import SeqFeature, FeatureLocation
+import os.path
 
 __author__ = 'pmoreno'
 
@@ -65,13 +66,17 @@ class NRPS2PredRunner(object):
         execCode = call(command, shell=True)
 
         # Finally we parse the result and add sequence features to the seq record.
-        parser = NRPS2Parser(fastaFilePath+".nrps2Report")
+        resultFilePath = fastaFilePath+".nrps2Report"
+        if os.path.isfile(resultFilePath):
+            parser = NRPS2Parser(resultFilePath)
 
-        while True:
-            seqFeat = parser.nextRegion()
-            if seqFeat is None:
-                break
-            seqRecord.features.append(seqFeat)
+            while True:
+                seqFeat = parser.nextRegion()
+                if seqFeat is None:
+                    break
+                seqRecord.features.append(seqFeat)
+        else:
+            print "NRPS2predictor failed probably, result file not generated."
 
 
 
