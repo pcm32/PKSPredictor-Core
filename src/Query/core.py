@@ -343,9 +343,10 @@ class CladeFeatureMarker(FeatureMarker):
                         print "Skipping model "+model+" due to evalue cutoff."
                         domainHit = hmmParse.nextAlignmentResult()
                         break
-                qual = {"evalue" : domainHit.getCEvalue(),
-                        "score" : domainHit.getScore(),
-                        "name" : model}
+                qual = {"evalue": domainHit.getCEvalue(),
+                        "score": domainHit.getScore(),
+                        "name": model,
+                        "subtype": "KS"}
                 domain_feat = SeqFeature(domain_loc, type="domain",
                                          strand=1, id=model, qualifiers=qual)
                 # seqAA.features.append(domain_feat)
