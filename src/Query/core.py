@@ -309,7 +309,7 @@ class CladeFeatureMarker(FeatureMarker):
             qual = {"evalue" : domainHit.getCEvalue(),
                         "score" : domainHit.getScore(),
                         "name" : model}
-            domain_feat = SeqFeature(domain_loc,type="domain",strand=1,id=model)
+            domain_feat = SeqFeature(domain_loc, type="domain", strand=1, id=model)
             # we could put scores and evalues in qualifiers field
             listOfGeneralModelDomains.append(SeqFeatureContainer(domain_feat))
             # seqAA.features.append(domain_feat)
@@ -321,14 +321,14 @@ class CladeFeatureMarker(FeatureMarker):
         model = hmmParse.goToNextModelAlignments()
         while model is not None:
             domainHit = hmmParse.nextAlignmentResult()
-            if self.skipClade.count(model)>0:
+            if self.skipClade.count(model) > 0:
                 print "Skipping model "+model
                 model = hmmParse.goToNextModelAlignments()
                 continue
             print "Processing model "+model
-            while domainHit != None:
+            while domainHit is not None:
                 domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
-                found=False
+                found = False
                 pickedSeqFeatCont = None # The general clade picked, where things are added later.
                 for seqFeatCont in listOfGeneralModelDomains:
                     if seqFeatCont.generalLocationContainsCladeLoc(domain_loc):
