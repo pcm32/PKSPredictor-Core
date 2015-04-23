@@ -251,7 +251,7 @@ class HMMERHitFeatureMarker(FeatureMarker):
         SeqIO.write(sequences=seqAA, handle=indfastaPath, format="fasta")
         scanOutputPath=self.outPutPath+seqAA.id+"_hmmerRes.txt"
         self.hmmerExec.runScan(query=indfastaPath, output=scanOutputPath, model=self.HMMModel)
-        hmmResFH = open(scanOutputPath,'r')
+        hmmResFH = open(scanOutputPath, 'r')
         hmmParse = HMMERParse(hmmerScanFileHandle=hmmResFH, maxBestModels=10)
         # check maxBestModels applicability
         model = hmmParse.goToNextModelAlignments()
@@ -261,7 +261,8 @@ class HMMERHitFeatureMarker(FeatureMarker):
                 domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
                 qual = {"evalue" : domainHit.getCEvalue(),
                         "score" : domainHit.getScore(),
-                        "name" : model}
+                        "name" : model,
+                        "subtype": model}
                 domain_feat = SeqFeature(domain_loc, type="domain", strand=1, id=model, qualifiers=qual)
                 seqAA.features.append(domain_feat)
                 domainHit = hmmParse.nextAlignmentResult()
