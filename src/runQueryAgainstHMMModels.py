@@ -7,6 +7,7 @@ from __future__ import print_function
 import sys
 import getopt
 from symbol import except_clause
+from SeqFeatureSorter.core import SeqFeatureSorter
 
 
 def usage():
@@ -101,6 +102,8 @@ def main():
     
     for seq in listOfSeqRecords:
         gbkToWrite = pathToOutput+seq.id+".gbk"
+        # Sort features in the seq object geographically (by start).
+        SeqFeatureSorter.geographic_sort(seq)
         seqRecordAnnotator.annotateSeqFeatures(seq)
         featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
         featWriter.writeFeatures(seq)
