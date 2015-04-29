@@ -75,6 +75,8 @@ class QueryRunner(object):
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "PVIA", "crotonase_p_1"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "FTPG", "crotonase_p_2"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "GG[ALVMTGS]G[GRYDAVTHSK][LIV]G", "KR motif stereospecificty S"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "[GDPSERVIHKNAT]x(3)[GVTA][IVAL][VHILF][HYFVQY][SIATGMLCFNV][AVTPS][GLIMRP]x(3)D","KR D-configured OH groups"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "[HN][GSA][TAVSIP][GAS][TMGS]","Elongating KS"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "DLxx[MWL]x(38)[VTF]x(20)[LYMG]x[CDI]X(20)[TAS]x(7)Vx(185)K", "D-Ala"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "D[MLVA]xx[IFLG]x(38)[WFIG]x(20)[ICY]x[AG]x(20)[CGAM]x(7)[LPIV]x(185)K", "Ala"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "IDxxTx(38)Lx(20)IxSx(20)Sx(7)Gx(185)K", "beta-Ala"))
@@ -251,7 +253,7 @@ class HMMERHitFeatureMarker(FeatureMarker):
         SeqIO.write(sequences=seqAA, handle=indfastaPath, format="fasta")
         scanOutputPath=self.outPutPath+seqAA.id+"_hmmerRes.txt"
         self.hmmerExec.runScan(query=indfastaPath, output=scanOutputPath, model=self.HMMModel)
-        hmmResFH = open(scanOutputPath,'r')
+        hmmResFH = open(scanOutputPath, 'r')
         hmmParse = HMMERParse(hmmerScanFileHandle=hmmResFH, maxBestModels=10)
         # check maxBestModels applicability
         model = hmmParse.goToNextModelAlignments()
@@ -261,7 +263,8 @@ class HMMERHitFeatureMarker(FeatureMarker):
                 domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
                 qual = {"evalue" : domainHit.getCEvalue(),
                         "score" : domainHit.getScore(),
-                        "name" : model}
+                        "name" : model,
+                        "subtype": model}
                 domain_feat = SeqFeature(domain_loc, type="domain", strand=1, id=model, qualifiers=qual)
                 seqAA.features.append(domain_feat)
                 domainHit = hmmParse.nextAlignmentResult()
@@ -343,9 +346,10 @@ class CladeFeatureMarker(FeatureMarker):
                         print "Skipping model "+model+" due to evalue cutoff."
                         domainHit = hmmParse.nextAlignmentResult()
                         break
-                qual = {"evalue" : domainHit.getCEvalue(),
-                        "score" : domainHit.getScore(),
-                        "name" : model}
+                qual = {"evalue": domainHit.getCEvalue(),
+                        "score": domainHit.getScore(),
+                        "name": model,
+                        "subtype": "KS"}
                 domain_feat = SeqFeature(domain_loc, type="domain",
                                          strand=1, id=model, qualifiers=qual)
                 # seqAA.features.append(domain_feat)

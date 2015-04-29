@@ -23,6 +23,7 @@ class NRPS2Parser(object):
         domain_loc = FeatureLocation(int(start), int(stop))
         qual = { "score" : score,
                  "name" : singleClassPred,
+                 "subtype" : "NRPS2",
                  "tool" : "NRPS2"}
         domain_feat = SeqFeature(domain_loc, type="domain",
                         strand=1, id=id+"_"+singleClassPred, qualifiers=qual)

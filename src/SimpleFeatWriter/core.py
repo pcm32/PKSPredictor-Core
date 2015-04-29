@@ -26,6 +26,7 @@ class SimpleFeatWriter(object):
             ranking = "N/A"
             region = "N/A"
             note = "N/A"
+            subtype = "N/A"
             if "evalue" in feature.qualifiers:
                 evalue = feature.qualifiers["evalue"]
             if "ranking" in feature.qualifiers:
@@ -34,13 +35,15 @@ class SimpleFeatWriter(object):
                 region = feature.qualifiers["region"]
             if "note" in feature.qualifiers:
                 note = feature.qualifiers["note"]
+            if "subtype" in feature.qualifiers:
+                subtype = feature.qualifiers["subtype"]
             score = feature.qualifiers["score"]
             name = feature.qualifiers["name"]
             type = feature.type
 
             self.file2write.write("\t".join([str(start), str(end), str(evalue),
                                              str(score), str(ranking), str(region),
-                                             type, name, note]))
+                                             type, subtype, name, note]))
             self.file2write.write("\n")
 
         self.file2write.close()
