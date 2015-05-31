@@ -244,7 +244,7 @@ class NRPSPred2FeatureMarker(FeatureMarker):
 class HMMERHitFeatureMarker(FeatureMarker):
 
     def __init__(self, HMMModel, HMMBinaryPath):
-        self.outPutPath = tempfile.gettempdir()
+        self.outPutPath = tempfile.gettempdir()+"/"
         self.HMMModel = HMMModel
         self.hmmerExec = HMMERSuite(path=HMMBinaryPath)
 
