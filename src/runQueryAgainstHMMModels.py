@@ -107,11 +107,12 @@ def main():
         seqRecordAnnotator.annotateSeqFeatures(seq)
         featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
         featWriter.writeFeatures(seq)
-        if "|" in seq.id:
-            seq.id = seq.id.split("|")[2]
-        if len(seq.id) > 16:
-            seq.id = seq.id[:16]
         seq.name = seq.id
+        if "|" in seq.name:
+            seq.name = seq.name.split("|")[2]
+        if len(seq.name) > 16:
+            seq.name = seq.name[:16]
+
 
         try:
             SeqIO.write(sequences=gbkProcessor.processGBK(seq), handle=gbkToWrite, format="genbank")
