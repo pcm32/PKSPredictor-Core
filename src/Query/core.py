@@ -123,6 +123,8 @@ class QueryRunner(object):
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "DFxxEx(38)Sx(20)TxAx(20)Ax(7)Vx(185)K", "Val"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "DAxxWx(38)Mx(20)FxAx(20)Ax(7)Vx(185)K", "Val"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "EPxxRx(38)Nx(20)IxVxEx(20)Fx(7)Vx(185)K", "Aad"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "(LA)HP(SCAG)(LMVI)(LMVI)D(SAG)(AG)(LFM)(QH)", "DH_conf"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "(LA)HP(SCAG)(LMVI)(LMVI)(SAG)(AG)(LFM)(QH)", "PS_not_DH"))
 
         self.listOfSeqRecords = list()
             
