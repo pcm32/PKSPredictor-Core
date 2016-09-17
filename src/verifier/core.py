@@ -21,9 +21,21 @@ class KS_requirement:
 
 
 class KS_Domain_Verifier(Domain_Verifier):
+    """
+    This object verifies that a KS domain given is preceeded, in terms of annotated domains, of all the required
+    domains that is supposed to be preceeded by. These domains ought to be between the current KS domain and the
+    previous (geographically speaking, so upstream) annotated KS domain. The domains expected are defined in the
+    annotation file for the cladification.
+    """
 
     def __init__(self, pathToAnnotationFile, seqObj):
+        """
 
+        :param pathToAnnotationFile: Path to the cladificaiton annotation file.
+        :type pathToAnnotationFile:
+        :param seqObj: The sequence object where KS preceeding domains should be verified.
+        :type seqObj:
+        """
         self.__path_annot = pathToAnnotationFile
         self.__seq_obj = seqObj
         self.__dict_requirements = {}
@@ -31,7 +43,7 @@ class KS_Domain_Verifier(Domain_Verifier):
 
     def __load_annot_file(self):
         """
-        Loads the annotation file whose path the object recieved on init. Data is left in a dictionary
+        Loads the annotation file whose path the object received on init. Data is left in a dictionary
         of KS_requirement classes.
         :return: Nothing
         """
@@ -43,6 +55,7 @@ class KS_Domain_Verifier(Domain_Verifier):
              termination_rule, non_elongating, verification_mandatory) = line.split("\t")
             self.__dict_requirements[clade_id] = KS_requirement(verification_domains)
             line = fh.readline()
+        fh.close()
 
     def verify(self):
         """
@@ -68,11 +81,11 @@ class KS_Domain_Verifier(Domain_Verifier):
                     verify otherwise
                     '''
                     if previous_stack > 1:
-                        self.__run_check(feature,current_preceding_module)
+                        self.__run_check(feature, current_preceding_module)
 
                 elif previous_stack < feature.qualifiers["region"]:
                     current_preceding_module = self.__seq_obj[previous_stack_end+1:feature.location.start-1]
-                    self.__run_check(feature,current_preceding_module)
+                    self.__run_check(feature, current_preceding_module)
                     previous_stack_end = feature.location.end
                     previous_stack = feature.qualifiers["region"]
 
@@ -95,6 +108,8 @@ class DH_Domain_Verifier(Domain_Verifier):
     either confirms it as a DH domain ("DH_conf"), or the pattern that leads to
     changing that domain to PS.
     """
+
+    # TODO This functionality is quite hard coded and should be improved in future.
 
     dh_confirmation_pattern = "DH_conf"
     ps_confirmation_pattern = "PS_not_DH"
