@@ -14,7 +14,7 @@ class KS_requirement:
 
     def __init__(self, domains):
         self.__requirements_list = list()
-        self.__requirements_list.extend(domains.split(sep=";"))
+        self.__requirements_list.extend(domains.split(";"))
 
     def get_requirements(self):
         return self.__requirements_list
@@ -38,9 +38,9 @@ class KS_Domain_Verifier(Domain_Verifier):
         fh = open(self.__path_annot)
         line = fh.readline() # header
         line = fh.readline()
-        while line is not None:
+        while line is not None and len(line) > 1:
             (clade_id, desc, desc_tool, molFile, postProc, verification_domains,
-             termination_rule, non_elongating) = line.split(sep="\t")
+             termination_rule, non_elongating, verification_mandatory) = line.split("\t")
             self.__dict_requirements[clade_id] = KS_requirement(verification_domains)
             line = fh.readline()
 
@@ -71,13 +71,13 @@ class KS_Domain_Verifier(Domain_Verifier):
                         self.__run_check(feature,current_preceding_module)
 
                 elif previous_stack < feature.qualifiers["region"]:
-                    current_preceding_module = self.__seq_obj[previous_stack_end+1,feature.location.start-1]
+                    current_preceding_module = self.__seq_obj[previous_stack_end+1:feature.location.start-1]
                     self.__run_check(feature,current_preceding_module)
                     previous_stack_end = feature.location.end
                     previous_stack = feature.qualifiers["region"]
 
     def __run_check(self, feature, current_preceding_module):
-        domains_to_be_found = self.__dict_requirements[feature.qualifiers["name"]].split("\t")
+        domains_to_be_found = self.__dict_requirements[feature.qualifiers["name"]].get_requirements()
         # Only work if the list of domains to be verified is not empty
         if domains_to_be_found:
             for feature_preceding_module in current_preceding_module.features:
