@@ -1,7 +1,7 @@
 import subprocess
 
+
 class HMMERSuite(object):
-    
     
     def __init__(self, path):
         self.path = path
@@ -27,6 +27,7 @@ class HMMERSuite(object):
         self.pPress.wait()
     #def getOutput(self):
      #   return self.pScan.stdout
+
     
 class HMMERDomainHit(object):
     
@@ -86,7 +87,8 @@ class HMMERModelHit(object):
     
     def getModel(self):
         return self.model
-    
+
+
 class HMMERModelBasedCutoffStore(object):
     
     def __init__(self, fileWithCutoffs):
@@ -103,9 +105,9 @@ class HMMERModelBasedCutoffStore(object):
     
     def getCutEvalueCutOff(self,modelName):
         return self.model2EvalueCutoff[modelName]
-    
-class HMMERParse(object):
 
+
+class HMMERParse(object):
 
     def __init__(self, hmmerScanFileHandle,maxBestModels=5):
         self.maxModels = maxBestModels
@@ -114,14 +116,13 @@ class HMMERParse(object):
 
         self.__skipFirstLines()
         self.__parseModelHits()
-        
-       
+
     def __parseModelHits(self):
         self.modelHits = []
         import re
         while (not self.line.startswith("Domain annotation")) and len(self.modelHits) <= self.maxModels:
             self.line = self.fileHandle.readline()
-            tokens = re.split('\s+',self.line)
+            tokens = re.split('\s+', self.line)
             if len(tokens) < 4:
                 break
             modelHit = HMMERModelHit(fsEvalue=tokens[1], 
@@ -204,8 +205,8 @@ class ModelAnnotator(object):
 
         annotFile.close()
 
-    def getAnnotationForKey(self,key):
-        return self.annotMap.get(key,None)
+    def getAnnotationForKey(self, key):
+        return self.annotMap.get(key, None)
 
 
             

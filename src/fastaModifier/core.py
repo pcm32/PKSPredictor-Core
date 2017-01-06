@@ -127,12 +127,16 @@ class GBKRankingBasedFeatureRemover(object):
 
 class SeqRecordAnnotator(object):
 
-    def __init__(self,modelAnnotator):
+    def __init__(self, modelAnnotator):
         self.modelAnnotator = modelAnnotator
 
-    def annotateSeqFeatures(self,seqRecord):
+    def annotateSeqFeatures(self, seqRecord):
+        '''
+        Adds annotation to the SeqRecord, currently only a note which is then used
+        in the GenBank file, to hold the clade description.
+        '''
         for feature in seqRecord.features:
-            clade = feature.qualifiers.get("name",None)
+            clade = feature.qualifiers.get("name", None)
             if clade is not None:
                 annot = self.modelAnnotator.getAnnotationForKey(clade)
                 if annot is not None:

@@ -57,7 +57,7 @@ class FuzzProRunner(object):
         #                    "-sequence","asis::"+seqRecord.seq.tostring(),
         #                    "-auto", "-rformat", "table", "-stdout"]
         self.pScan = Popen([self.path+"/"+self.executable, "-pattern", self.pattern,
-                            "-sequence","asis::"+seqRecord.seq.tostring(),
+                            "-sequence","asis::"+str(seqRecord.seq),
                             "-auto", "-rformat", "table", "-stdout"], stdout=PIPE)
         # get stdout somehow and then parse it
         self.pScan.wait()

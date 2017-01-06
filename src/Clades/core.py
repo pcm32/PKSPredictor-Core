@@ -5,7 +5,7 @@ class CladeReader(object):
     Base class for Clade definition reading
     """
 
-    def __init__(self,pathToData):
+    def __init__(self):
         self.cladeDesc = {}
         self.entry2Clade = {}
 
@@ -21,8 +21,7 @@ class NewickCladeReader(CladeReader):
     '''
 
     def __init__(self, newickFilesPath):
-        CladeReader.__init__()
-        self.pathToNewickFiles=newickFilesPath
+        self.pathToNewickFiles = newickFilesPath
         self.__fillIndexes()
 
     def __fillIndexes(self):
@@ -65,8 +64,8 @@ class CladeDefinitionReader(CladeReader):
     Commented lines are used for the annotation file.
     """
 
-    def __init__(self,pathToDefFile):
-        CladeReader.__init__()
+    def __init__(self, pathToDefFile):
+        CladeReader.__init__(self)
         self.pathToDef = pathToDefFile
         self.__fillIndexes()
 
