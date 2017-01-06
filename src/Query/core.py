@@ -1,3 +1,5 @@
+from os.path import isfile
+
 from Bio import SeqIO
 from Bio.Alphabet import IUPAC
 from hmmer.core import HMMERSuite, HMMERParse, HMMERModelBasedCutoffStore
@@ -5,6 +7,7 @@ import re
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from EMBOSS.core import FuzzProRunner
 import tempfile
+
 
 
 class QueryRunner(object):
@@ -75,7 +78,10 @@ class QueryRunner(object):
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "PVIA", "crotonase_p_1"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "FTPG", "crotonase_p_2"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "GG[ALVMTGS]G[GRYDAVTHSK][LIV]G", "KR motif stereospecificty S"))
-            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "[GDPSERVIHKNAT]x(3)[GVTA][IVAL][VHILF][HYFVQY][SIATGMLCFNV][AVTPS][GLIMRP]x(3)D","KR D-configured OH groups"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath,
+                                                        "[GDPSERVIHKNAT]x(3)[GVTA][IVAL][VHILF][HYFVQY][SIATGMLCFNV][AVTPS][GLIMRP]x(3)D", "KR D-configured OH groups"))
+            sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath,
+                                                        "[GDPSERVIHKNAT]x(3)[GVTA][IVAL][VHILF][HYFVQY][SIATGMLCFNV][AVTPS][GLIMRP]x(3)", "KR L-configured OH groups"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "[HN][GSA][TAVSIP][GAS][TMGS]","Elongating KS"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "DLxx[MWL]x(38)[VTF]x(20)[LYMG]x[CDI]X(20)[TAS]x(7)Vx(185)K", "D-Ala"))
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "D[MLVA]xx[IFLG]x(38)[WFIG]x(20)[ICY]x[AG]x(20)[CGAM]x(7)[LPIV]x(185)K", "Ala"))
@@ -127,6 +133,8 @@ class QueryRunner(object):
             sequenceMarkers.append(PatternFeatureMarker(self.fuzzProPath, "(LA)HP(SCAG)(LMVI)(LMVI)(SAG)(AG)(LFM)(QH)", "PS_not_DH"))
 
         self.listOfSeqRecords = list()
+        print "Starting processing..."
+
             
         for seqAA in listOfAASeqs:
             # For each amino acid sequence, we run HMMER and mark
@@ -139,6 +147,7 @@ class QueryRunner(object):
 
             # This can be written at the outside to GBK
             self.listOfSeqRecords.append(seqAA)
+        print "Finished processing"
     
     def getSeqsWithResults(self):
         return self.listOfSeqRecords
@@ -208,6 +217,9 @@ class CladeFeatureMarker(FeatureMarker):
     def __init__(self, outPutPath, HMMModel, HMMBinaryPath, skipClade, useCutOff, allDomains):
         self.outPutPath = outPutPath
         self.HMMModel = HMMModel
+        if not isfile(self.HMMModel):
+            print "Could not find HMMModel at "+self.HMMModel
+            exit(-1)
         self.skipClade = skipClade
         self.useCutOff = useCutOff
         self.hmmerExec = HMMERSuite(path=HMMBinaryPath)
