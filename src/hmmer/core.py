@@ -205,8 +205,8 @@ class ModelAnnotator(object):
 
         annotFile.close()
 
-    def getAnnotationForKey(self,key):
-        return self.annotMap.get(key,None)
+    def getAnnotationForKey(self, key):
+        return self.annotMap.get(key, None)
 
 
             
