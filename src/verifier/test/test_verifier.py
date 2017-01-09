@@ -31,10 +31,6 @@ class test_ks_domain_verifier(unittest.TestCase):
         changes = verifier.verify()
         self.assertTrue(clade_3.qualifiers[KSDomainVerifier.get_qualifier_key()])
 
-
-        # print changes
-        # apply changes?
-
     def test_run_DH_correct(self):
         """
         Checks for a DH domain which includes the correct signature inside

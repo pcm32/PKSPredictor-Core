@@ -126,10 +126,13 @@ def main():
             for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation, seqObj=seq),
                                     DH_PS_DomainVerifier(seq)]:
                 domain_verifier.verify()
+            featWriter = SimpleFeatWriter(pathToOutput, 5, include_verification=True)
+        else:
+            featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
 
-        featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
         featWriter.writeFeatures(seq)
         seq.name = seq.id
+        # TODO understand rationality behind these statements, is it just due to the file being created.
         if "|" in seq.name:
             seq.name = seq.name.split("|")[2]
         if len(seq.name) > 16:

@@ -1,21 +1,25 @@
+from verifier.core import Domain_Verifier
+
 __author__ = 'pmoreno'
 
 
 
 class SimpleFeatWriter(object):
     '''
-    This class receives a seqRecord object and write a simple, one line per feature.
+    This class receives a seqRecord object and write a simple, one line per feature. Include verification should
+    only be used when the new annotation scheme is used.
     '''
-    def __init__(self, pathForOutput, maxRanking):
+    def __init__(self, pathForOutput, maxRanking, include_verification=False):
         '''
         Constructor
         '''
         self.path = pathForOutput
         self.maxRanking = maxRanking
+        self.use_verification = include_verification
 
 
-    def writeFeatures(self,seqObject):
-        self.file2write = open(self.path+seqObject.id+".features", mode="w")
+    def writeFeatures(self, seqObject):
+        file2write = open(self.path+seqObject.id+".features", mode="w")
 
         for feature in seqObject.features:
             if "ranking" in feature.qualifiers and feature.qualifiers["ranking"] > self.maxRanking:
@@ -41,11 +45,22 @@ class SimpleFeatWriter(object):
             name = feature.qualifiers["name"]
             type = feature.type
 
-            self.file2write.write("\t".join([str(start), str(end), str(evalue),
-                                             str(score), str(ranking), str(region),
-                                             type, subtype, name, note]))
-            self.file2write.write("\n")
+            if self.use_verification:
+                verification = "N/A"
+                if Domain_Verifier.get_qualifier_key() in feature.qualifiers:
+                    verification = feature.qualifiers[Domain_Verifier.get_qualifier_key()]
 
-        self.file2write.close()
+                file2write.write("\t".join([str(start), str(end), str(evalue),
+                                             str(score), str(ranking), str(region),
+                                             type, subtype, name, note, str(verification)]))
+                # TODO add support for extra column on Java side.
+            else:
+                file2write.write("\t".join([str(start), str(end), str(evalue),
+                                            str(score), str(ranking), str(region),
+                                            type, subtype, name, note]))
+
+            file2write.write("\n")
+
+        file2write.close()
 
 
