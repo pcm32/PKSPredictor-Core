@@ -1,7 +1,7 @@
 from Bio.Seq import Seq
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqRecord import SeqRecord
-from verifier.core import KSDomainVerifier
+from verifier.core import KSDomainVerifier, DH_PS_DomainVerifier
 from Clades.core import CladificationAnnotationReader
 import pkg_resources, os, random
 import unittest
@@ -29,11 +29,43 @@ class test_ks_domain_verifier(unittest.TestCase):
         verifier = KSDomainVerifier(seqObj=seqobj, cladififcation_annotation=clade_annot)
 
         changes = verifier.verify()
-        self.assertTrue(clade_3.qualifiers['verified'])
+        self.assertTrue(clade_3.qualifiers[KSDomainVerifier.get_qualifier_key()])
 
 
         # print changes
         # apply changes?
+
+    def test_run_DH_correct(self):
+        """
+        Checks for a DH domain which includes the correct signature inside
+        """
+        seq_tokens = ''.join([random.choice('ACDEFGHIKLMNPQRSTVWY') for n in xrange(30)]) + 'LHPSMLDSGMQ' + \
+                     ''.join([random.choice('ACDEFGHIKLMNPQRSTVWY') for n in xrange(10)])
+        seqobj = SeqRecord(Seq(seq_tokens))
+
+        dh_domain = self.__add_domain_from_to(seqobj, 10, 48, "DH")
+        dh_confirm_fuzzpro = self.__add_domain_from_to(seqobj, 31, 42, DH_PS_DomainVerifier.dh_confirmation_pattern)
+
+        verifier = DH_PS_DomainVerifier(seqobj)
+        verifier.verify()
+        # Verification should be true
+        self.assertTrue(dh_domain.qualifiers[KSDomainVerifier.get_qualifier_key()])
+
+    def test_run_DH_incorrect(self):
+        """
+        Checks for a DH domain which includes the incorrect signature inside
+        """
+        seq_tokens = ''.join([random.choice('ACDEFGHIKLMNPQRSTVWY') for n in xrange(30)]) + 'LHPSMLSGMQ' + \
+                     ''.join([random.choice('ACDEFGHIKLMNPQRSTVWY') for n in xrange(10)])
+        seqobj = SeqRecord(Seq(seq_tokens))
+
+        dh_domain = self.__add_domain_from_to(seqobj, 10, 48, "DH")
+        ps_hint_fuzzpro = self.__add_domain_from_to(seqobj, 31, 42, DH_PS_DomainVerifier.ps_confirmation_pattern)
+
+        verifier = DH_PS_DomainVerifier(seqobj)
+        verifier.verify()
+        # Verification passing value should be false
+        self.assertFalse(dh_domain.qualifiers[KSDomainVerifier.get_qualifier_key()])
 
     def __add_domain_from_to(self, seq_record, start, end, name, is_ks=False, region=None):
         qual = {"evalue": "1E-7",

@@ -6,6 +6,10 @@ __author__ = 'pmoreno'
 class Domain_Verifier:
     __metaclass__ = ABCMeta
 
+    @staticmethod
+    def get_qualifier_key():
+        return "pass_check"
+
     @abstractmethod
     def verify(self):
         pass
@@ -70,12 +74,12 @@ class KSDomainVerifier(Domain_Verifier):
                 # afterwards we look at any remaining items in domains_to_be_found
                 domains_to_be_found.remove(feature_preceding_module.qualifiers["name"])
         if len(domains_to_be_found)>0:
-            feature.qualifiers["verified"] = False
+            feature.qualifiers[self.get_qualifier_key()] = False
         else:
-            feature.qualifiers["verified"] = True
+            feature.qualifiers[self.get_qualifier_key()] = True
 
 
-class DH_Domain_Verifier(Domain_Verifier):
+class DH_PS_DomainVerifier(Domain_Verifier):
     """
     Checks whether DH domains include geographically the fuzzpro pattern that
     either confirms it as a DH domain ("DH_conf"), or the pattern that leads to
@@ -96,21 +100,28 @@ class DH_Domain_Verifier(Domain_Verifier):
         of a particular signature.
         """
         for feature in self.__seq_obj.features:
-            if feature.qualifiers["name"] is "DH":
-                slice = self.__seq_obj[feature.location.start, feature.location.stop]
+            if feature.qualifiers["name"] in ["DH", "PS"]:
+                slice = self.__seq_obj[feature.location.start:feature.location.end]
                 found_confirmation = False
                 found_ps_hint = False
                 for sub_features in slice.features:
-                    if sub_features.id is DH_Domain_Verifier.dh_confirmation_pattern and not found_confirmation:
+                    if sub_features.id is DH_PS_DomainVerifier.dh_confirmation_pattern and not found_confirmation:
                         found_confirmation = True
-                    if sub_features.id is DH_Domain_Verifier.ps_confirmation_pattern and not found_ps_hint:
+                    if sub_features.id is DH_PS_DomainVerifier.ps_confirmation_pattern and not found_ps_hint:
                         found_ps_hint = True
-                if not found_confirmation and found_ps_hint:
-                    # should we change the feature, or mark it as not verified?
-                    # we need to make sure that a PS feature is seen in this case, so for the time being
-                    # we will just alterate the feature here
-                    feature.qualifiers["name"] = "PS"
-                    feature.id = "PS"
+                if feature.qualifiers["name"] is "DH":
+                    if found_confirmation and not found_ps_hint:
+                        feature.qualifiers[self.get_qualifier_key()] = True
+                    else:
+                        # mark it as not verified, a PS should be given preference to this.
+                        feature.qualifiers[self.get_qualifier_key()] = False
+                else:
+                    # PS domain case
+                    if not found_confirmation and found_ps_hint:
+                        feature.qualifiers[self.get_qualifier_key()] = True
+                    else:
+                        # mark it as not verified, a DH should be given preference to this.
+                        feature.qualifiers[self.get_qualifier_key()] = False
 
 
 

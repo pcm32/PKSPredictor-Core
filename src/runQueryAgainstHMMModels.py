@@ -15,7 +15,7 @@ from SeqFeatureSorter.core import SeqFeatureSorter
 
 
 # TODO this is horrible, should be moved to argparse instead!!!
-from verifier.core import KSDomainVerifier, DH_Domain_Verifier
+from verifier.core import KSDomainVerifier, DH_PS_DomainVerifier
 
 
 def usage():
@@ -123,8 +123,8 @@ def main():
         seqRecordAnnotator.annotateSeqFeatures(seq)
         # Run verifiers and add verification field output to the SimpleFeatWriter
         if clade_annotation is not None:
-            for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation,seqObj=seq),
-                                     DH_Domain_Verifier(seq)]:
+            for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation, seqObj=seq),
+                                    DH_PS_DomainVerifier(seq)]:
                 domain_verifier.verify()
 
         featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
