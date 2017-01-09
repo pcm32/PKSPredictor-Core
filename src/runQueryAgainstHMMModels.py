@@ -4,10 +4,18 @@ Created on Sep 24, 2011
 @author: pmoreno
 '''
 from __future__ import print_function
+
+import os
 import sys
 import getopt
 from symbol import except_clause
+
+from Clades.core import CladificationAnnotationReader
 from SeqFeatureSorter.core import SeqFeatureSorter
+
+
+# TODO this is horrible, should be moved to argparse instead!!!
+from verifier.core import KSDomainVerifier, DH_Domain_Verifier
 
 
 def usage():
@@ -97,14 +105,28 @@ def main():
     from hmmer.core import ModelAnnotator
 
     gbkProcessor = GBKRankingBasedFeatureRemover(1)
-    modelAnnotator = ModelAnnotator(pathToHMMModel)
+    if os.path.isfile(CladificationAnnotationReader.get_expected_annot_path(pathToHMMModel)):
+        # This is the case for the new annotation format, which is expected with a slightly different name
+        # (different extension).
+        reader = CladificationAnnotationReader()
+        clade_annotation = reader.get_annotation(CladificationAnnotationReader.get_expected_annot_path(pathToHMMModel))
+        modelAnnotator = ModelAnnotator(clade_annotation=clade_annotation)
+    else:
+        # For the legacy annotation format.
+        modelAnnotator = ModelAnnotator(pathToHMMModel)
     seqRecordAnnotator = SeqRecordAnnotator(modelAnnotator)
-    
+
     for seq in listOfSeqRecords:
         gbkToWrite = pathToOutput+seq.id+".gbk"
         # Sort features in the seq object geographically (by start).
         SeqFeatureSorter.geographic_sort(seq)
         seqRecordAnnotator.annotateSeqFeatures(seq)
+        # Run verifiers and add verification field output to the SimpleFeatWriter
+        if clade_annotation is not None:
+            for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation,seqObj=seq),
+                                     DH_Domain_Verifier(seq)]:
+                domain_verifier.verify()
+
         featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print
         featWriter.writeFeatures(seq)
         seq.name = seq.id
