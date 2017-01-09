@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from Clades.core import CladificationAnnotation
 
 __author__ = 'pmoreno'
 
@@ -10,17 +11,7 @@ class Domain_Verifier:
         pass
 
 
-class KS_requirement:
-
-    def __init__(self, domains):
-        self.__requirements_list = list()
-        self.__requirements_list.extend(domains.split(";"))
-
-    def get_requirements(self):
-        return self.__requirements_list
-
-
-class KS_Domain_Verifier(Domain_Verifier):
+class KSDomainVerifier(Domain_Verifier):
     """
     This object verifies that a KS domain given is preceeded, in terms of annotated domains, of all the required
     domains that is supposed to be preceeded by. These domains ought to be between the current KS domain and the
@@ -28,34 +19,16 @@ class KS_Domain_Verifier(Domain_Verifier):
     annotation file for the cladification.
     """
 
-    def __init__(self, pathToAnnotationFile, seqObj):
+    def __init__(self, cladififcation_annotation, seqObj):
         """
 
-        :param pathToAnnotationFile: Path to the cladificaiton annotation file.
-        :type pathToAnnotationFile:
+        :param cladififcation_annotation: A cladificaiton annotation object.
+        :type CladificationAnnotation
         :param seqObj: The sequence object where KS preceeding domains should be verified.
         :type seqObj:
         """
-        self.__path_annot = pathToAnnotationFile
+        self.__cladification_annot = cladififcation_annotation
         self.__seq_obj = seqObj
-        self.__dict_requirements = {}
-        self.__load_annot_file()
-
-    def __load_annot_file(self):
-        """
-        Loads the annotation file whose path the object received on init. Data is left in a dictionary
-        of KS_requirement classes.
-        :return: Nothing
-        """
-        fh = open(self.__path_annot)
-        line = fh.readline() # header
-        line = fh.readline()
-        while line is not None and len(line) > 1:
-            (clade_id, desc, desc_tool, molFile, postProc, verification_domains,
-             termination_rule, non_elongating, verification_mandatory) = line.split("\t")
-            self.__dict_requirements[clade_id] = KS_requirement(verification_domains)
-            line = fh.readline()
-        fh.close()
 
     def verify(self):
         """
@@ -90,7 +63,7 @@ class KS_Domain_Verifier(Domain_Verifier):
                     previous_stack = feature.qualifiers["region"]
 
     def __run_check(self, feature, current_preceding_module):
-        domains_to_be_found = self.__dict_requirements[feature.qualifiers["name"]].get_requirements()
+        domains_to_be_found = list(self.__cladification_annot.get_domain_requirements(feature.qualifiers["name"]))
         # Only work if the list of domains to be verified is not empty
         if domains_to_be_found:
             for feature_preceding_module in current_preceding_module.features:
