@@ -20,7 +20,8 @@ if __name__ == "__main__":
     splitter.writeFastas(pathForCompleteFastaAlign,outputDir)
 
     # We also write the description/annotation for clades
-    fh = open(outputDir+"/"+hmmName+".annot",mode="w")
+    # TODO Deprecate what follows somehow.
+    fh = open(outputDir+"/"+hmmName+".annot", mode="w")
 
     for clade in cladeDefReader.cladeDesc.keys():
         fh.write(clade+"\t"+cladeDefReader.cladeDesc.get(clade)+"\n")

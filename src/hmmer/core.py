@@ -1,4 +1,5 @@
 import subprocess
+from Clades.core import CladificationAnnotation
 
 
 class HMMERSuite(object):
@@ -190,23 +191,40 @@ class HMMERParse(object):
 
 
 class ModelAnnotator(object):
+    """
+    Holds clade descriptions to annotate later SeqFeature records.
+    """
+    # TODO this object should be deprecated and merged into the CladeAnnotation objects.
 
     def __init__(self, pathToModel):
+        """
+        Reads an older annotation file, which only includes Clade name and description.
+        """
         self.pathToModel = pathToModel
-        annotFile = open(pathToModel+".annot","r")
+        annotFile = open(pathToModel+".annot", "r")
         line = annotFile.readline()
-        self.annotMap = {}
+        self.legacy_annot_map = {}
         while len(line) > 0:
             line = line.strip()
             annot = line.rsplit("\t")
             if len(annot) > 1:
-                self.annotMap[annot[0]] = annot[1]
+                self.legacy_annot_map[annot[0]] = annot[1]
             line = annotFile.readline()
 
         annotFile.close()
 
+    def __init__(self, clade_annotation):
+        """
+        A model annotator backed by a clade annotation object.
+        :arg
+        """
+        for clade_id in clade_annotation.get_all_clade_ids():
+            self.legacy_annot_map[clade_id] = clade_annotation.get_description(clade_id=clade_id)
+
+
+
     def getAnnotationForKey(self, key):
-        return self.annotMap.get(key, None)
+        return self.legacy_annot_map.get(key, None)
 
 
             

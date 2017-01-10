@@ -118,3 +118,88 @@ class FastaCladeSplitter(object):
 
         for cladeName in self._clade2fileHandle.keys():
             self._clade2fileHandle[cladeName].close()
+
+
+class KSDomainRequirement(object):
+    # TODO probably get rid of this object... is nothing but a list of domain identifiers.
+    def __init__(self, domains):
+        self.__requirements_list = list()
+        self.__requirements_list.extend(domains.split(";"))
+
+    def get_requirements(self):
+        return self.__requirements_list
+
+
+class CladificationAnnotation(object):
+    def __init__(self):
+        self.__molfile = {}
+        self.__desc = {}
+        self.__desc_tool = {}
+        self.__post_processors = {}
+        self.__verification_domains = {}
+        self.__termination_rule = {}
+        self.__non_elongating = {}
+        self.__verification_mandatory = {}
+
+    def add_entry(self, clade_id, desc, desc_tool, molfile, termination_rule,
+                  verification_domains=[], non_elongating=False, verification_mandatory=False, post_processors=[]):
+        """
+        Adds an entry of annotation for a clade id.
+        """
+        self.__desc[clade_id] = desc
+        self.__desc_tool[clade_id] = desc_tool
+        self.__molfile[clade_id] = molfile
+        self.__post_processors[clade_id] = post_processors
+        self.__verification_domains[clade_id] = verification_domains
+        self.__termination_rule[clade_id] = termination_rule
+        self.__non_elongating[clade_id] = non_elongating
+        self.__verification_mandatory[clade_id] = verification_mandatory
+
+    def get_domain_requirements(self, clade_id):
+        """
+        :returns list of domains required upstream for a clade to be present
+        """
+        return self.__verification_domains[clade_id].get_requirements()
+
+    def get_description(self, clade_id):
+        return self.__desc[clade_id]
+
+    def get_all_clade_ids(self):
+        return self.__desc.keys()
+
+
+class CladificationAnnotationReader(object):
+    """
+    Reads the cladification annotation file
+    """
+
+    @staticmethod
+    def get_expected_annot_path(hmmer_model_path):
+        """
+        The expected annotation file path for a given hmmer model.
+        """
+        return hmmer_model_path+".annot_v2"
+
+    def get_annotation(self, annotation_path):
+        """
+        Loads the annotation file whose path the object received on init. Data is left in a dictionary
+        of KS_requirement classes.
+        :return: CladificationAnnotation
+        """
+        fh = open(annotation_path)
+        annotation = CladificationAnnotation()
+        line = fh.readline()  # header
+        line = fh.readline()
+        while line is not None and len(line) > 1:
+            (clade_id, desc, desc_tool, molfile, post_procs, verification_domains,
+             termination_rule, non_elongating, verification_mandatory) = line.split("\t")
+
+            annotation.add_entry(clade_id, desc, desc_tool, molfile,
+                                 post_processors=filter(None, post_procs.split(";")),
+                                 verification_domains=KSDomainRequirement(verification_domains),
+                                 termination_rule=termination_rule, non_elongating=(non_elongating == 'yes'),
+                                 verification_mandatory=(verification_mandatory == 'yes')
+                                 )
+            line = fh.readline()
+        fh.close()
+        return annotation

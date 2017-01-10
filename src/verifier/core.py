@@ -1,26 +1,21 @@
 from abc import ABCMeta, abstractmethod
+from Clades.core import CladificationAnnotation
 
 __author__ = 'pmoreno'
 
 class Domain_Verifier:
     __metaclass__ = ABCMeta
 
+    @staticmethod
+    def get_qualifier_key():
+        return "pass_check"
+
     @abstractmethod
     def verify(self):
         pass
 
 
-class KS_requirement:
-
-    def __init__(self, domains):
-        self.__requirements_list = list()
-        self.__requirements_list.extend(domains.split(";"))
-
-    def get_requirements(self):
-        return self.__requirements_list
-
-
-class KS_Domain_Verifier(Domain_Verifier):
+class KSDomainVerifier(Domain_Verifier):
     """
     This object verifies that a KS domain given is preceeded, in terms of annotated domains, of all the required
     domains that is supposed to be preceeded by. These domains ought to be between the current KS domain and the
@@ -28,34 +23,16 @@ class KS_Domain_Verifier(Domain_Verifier):
     annotation file for the cladification.
     """
 
-    def __init__(self, pathToAnnotationFile, seqObj):
+    def __init__(self, cladififcation_annotation, seqObj):
         """
 
-        :param pathToAnnotationFile: Path to the cladificaiton annotation file.
-        :type pathToAnnotationFile:
+        :param cladififcation_annotation: A cladificaiton annotation object.
+        :type CladificationAnnotation
         :param seqObj: The sequence object where KS preceeding domains should be verified.
         :type seqObj:
         """
-        self.__path_annot = pathToAnnotationFile
+        self.__cladification_annot = cladififcation_annotation
         self.__seq_obj = seqObj
-        self.__dict_requirements = {}
-        self.__load_annot_file()
-
-    def __load_annot_file(self):
-        """
-        Loads the annotation file whose path the object received on init. Data is left in a dictionary
-        of KS_requirement classes.
-        :return: Nothing
-        """
-        fh = open(self.__path_annot)
-        line = fh.readline() # header
-        line = fh.readline()
-        while line is not None and len(line) > 1:
-            (clade_id, desc, desc_tool, molFile, postProc, verification_domains,
-             termination_rule, non_elongating, verification_mandatory) = line.split("\t")
-            self.__dict_requirements[clade_id] = KS_requirement(verification_domains)
-            line = fh.readline()
-        fh.close()
 
     def verify(self):
         """
@@ -90,19 +67,19 @@ class KS_Domain_Verifier(Domain_Verifier):
                     previous_stack = feature.qualifiers["region"]
 
     def __run_check(self, feature, current_preceding_module):
-        domains_to_be_found = self.__dict_requirements[feature.qualifiers["name"]].get_requirements()
+        domains_to_be_found = list(self.__cladification_annot.get_domain_requirements(feature.qualifiers["name"]))
         # Only work if the list of domains to be verified is not empty
         if domains_to_be_found:
             for feature_preceding_module in current_preceding_module.features:
                 # afterwards we look at any remaining items in domains_to_be_found
                 domains_to_be_found.remove(feature_preceding_module.qualifiers["name"])
         if len(domains_to_be_found)>0:
-            feature.qualifiers["verified"] = False
+            feature.qualifiers[self.get_qualifier_key()] = False
         else:
-            feature.qualifiers["verified"] = True
+            feature.qualifiers[self.get_qualifier_key()] = True
 
 
-class DH_Domain_Verifier(Domain_Verifier):
+class DH_PS_DomainVerifier(Domain_Verifier):
     """
     Checks whether DH domains include geographically the fuzzpro pattern that
     either confirms it as a DH domain ("DH_conf"), or the pattern that leads to
@@ -123,21 +100,28 @@ class DH_Domain_Verifier(Domain_Verifier):
         of a particular signature.
         """
         for feature in self.__seq_obj.features:
-            if feature.qualifiers["name"] is "DH":
-                slice = self.__seq_obj[feature.location.start, feature.location.stop]
+            if feature.qualifiers["name"] in ["DH", "PS"]:
+                slice = self.__seq_obj[feature.location.start:feature.location.end]
                 found_confirmation = False
                 found_ps_hint = False
                 for sub_features in slice.features:
-                    if sub_features.id is DH_Domain_Verifier.dh_confirmation_pattern and not found_confirmation:
+                    if sub_features.id is DH_PS_DomainVerifier.dh_confirmation_pattern and not found_confirmation:
                         found_confirmation = True
-                    if sub_features.id is DH_Domain_Verifier.ps_confirmation_pattern and not found_ps_hint:
+                    if sub_features.id is DH_PS_DomainVerifier.ps_confirmation_pattern and not found_ps_hint:
                         found_ps_hint = True
-                if not found_confirmation and found_ps_hint:
-                    # should we change the feature, or mark it as not verified?
-                    # we need to make sure that a PS feature is seen in this case, so for the time being
-                    # we will just alterate the feature here
-                    feature.qualifiers["name"] = "PS"
-                    feature.id = "PS"
+                if feature.qualifiers["name"] is "DH":
+                    if found_confirmation and not found_ps_hint:
+                        feature.qualifiers[self.get_qualifier_key()] = True
+                    else:
+                        # mark it as not verified, a PS should be given preference to this.
+                        feature.qualifiers[self.get_qualifier_key()] = False
+                else:
+                    # PS domain case
+                    if not found_confirmation and found_ps_hint:
+                        feature.qualifiers[self.get_qualifier_key()] = True
+                    else:
+                        # mark it as not verified, a DH should be given preference to this.
+                        feature.qualifiers[self.get_qualifier_key()] = False
 
 
 
