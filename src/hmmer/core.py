@@ -4,27 +4,31 @@ from Clades.core import CladificationAnnotation
 
 class HMMERSuite(object):
     
-    def __init__(self, path):
-        self.path = path
+    def __init__(self, path=None):
         self.executableScan = 'hmmscan'
         self.executableBuild = 'hmmbuild'
         self.executablePress = 'hmmpress'
+        if path:
+            self.executableScan = path+"/"+self.executableScan
+            self.executableBuild = path+"/"+self.executableBuild
+            self.executablePress = path+"/"+self.executablePress
+
 
     def runScan(self, query, output, model):
         from subprocess import Popen
-        fileOut=open(output,'w')
-        self.pScan = Popen([self.path+"/"+self.executableScan,model,query],stdout=fileOut)
+        fileOut=open(output, 'w')
+        self.pScan = Popen([self.executableScan, model, query], stdout=fileOut)
         self.pScan.wait()
         fileOut.close()
     
     def runBuild(self, fastaAlign, output, modelName):
         from subprocess import Popen
-        self.pBuild = Popen([self.path+"/"+self.executableBuild,"-n",modelName,"--informat","afa",output,fastaAlign])
+        self.pBuild = Popen([self.executableBuild, "-n", modelName, "--informat", "afa", output, fastaAlign])
         self.pBuild.wait()
         
     def runPress(self,hmmModelCompendium):
         from subprocess import Popen
-        self.pPress = Popen([self.path+"/"+self.executablePress,hmmModelCompendium])
+        self.pPress = Popen([self.executablePress, hmmModelCompendium])
         self.pPress.wait()
     #def getOutput(self):
      #   return self.pScan.stdout
