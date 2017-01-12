@@ -12,11 +12,21 @@ from subprocess import Popen
 import Query
 
 if __name__ == '__main__':
+
+    if len(sys.argv) < 2:
+        print "USAGE: runCreateHMMERsForPrediction.py path-to-dir-with-clade-fastas " \
+              "path-to-complete-alignment consensus-threshold output-path-hmmer-model hmmer-binary-path"
+        exit(1)
+
+
     pathToDirWithClades=sys.argv[1]
     pathToFastaOveralAlignment=sys.argv[2]
     consensusThres=float(sys.argv[3])
     outPutPathForHMMERModel=sys.argv[4]
-    hmmerBinaryPath=sys.argv[5]
+    if len(sys.argv) > 5:
+        hmmerBinaryPath=sys.argv[5]
+    else:
+        hmmerBinaryPath = None
     
     
     overallKSModelName=Query.allKSModelName()
@@ -54,7 +64,7 @@ if __name__ == '__main__':
         
     # Press the models
     outputPathAllModels=outPutPathForHMMERModel+"PKSAllPlusClades_ConsSignal%d.hmm" % int(consensusThres*100)
-    fileWithAllHMMModels=open(outputPathAllModels,'w')
+    fileWithAllHMMModels=open(outputPathAllModels, 'w')
     p1=Popen(args=filesPathToHMMPress,stdout=fileWithAllHMMModels)
     p1.wait()
     fileWithAllHMMModels.close()
