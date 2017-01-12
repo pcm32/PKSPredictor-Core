@@ -1,3 +1,6 @@
+from collections import defaultdict
+from itertools import chain
+
 __author__ = 'pmoreno'
 
 class CladeReader(object):
@@ -21,6 +24,7 @@ class NewickCladeReader(CladeReader):
     '''
 
     def __init__(self, newickFilesPath):
+        CladeReader.__init__(self)
         self.pathToNewickFiles = newickFilesPath
         self.__fillIndexes()
 
@@ -67,6 +71,7 @@ class CladeDefinitionReader(CladeReader):
     def __init__(self, pathToDefFile):
         CladeReader.__init__(self)
         self.pathToDef = pathToDefFile
+        self.entry2Clade = defaultdict(list)
         self.__fillIndexes()
 
     def __fillIndexes(self):
@@ -78,9 +83,10 @@ class CladeDefinitionReader(CladeReader):
                 if len(tokens) > 1:
                     self.cladeDesc[clade] = tokens[1]
             elif len(tokens) > 1:
-                clade = tokens[1]
-                entry = tokens[0].replace(">","")
-                self.entry2Clade[entry] = clade
+                clade = tokens[1].rstrip()
+                entry = tokens[0].replace(">", "")
+                if clade not in self.entry2Clade[entry]:
+                    self.entry2Clade[entry].append(clade)
 
 
 class FastaCladeSplitter(object):
@@ -89,11 +95,11 @@ class FastaCladeSplitter(object):
     a fasta file for each clade.
     '''
 
-    def __init__(self,mappings):
+    def __init__(self, mappings):
         self._mappings = mappings
         self._clade2fileHandle = {}
 
-    def writeFastas(self,pathToCompleteFastaAlignment,outputPath):
+    def writeFastas(self, pathToCompleteFastaAlignment, outputPath):
         """
         Writes individual clades as fasta alignments, where the files are stored in the output path
         and the name of each file is composed of <clade_name>.fasta . Data is obtained from the complete
@@ -106,15 +112,21 @@ class FastaCladeSplitter(object):
         """
         from Bio import SeqIO, AlignIO
         from Bio.Alphabet import IUPAC, Gapped
+
         # create file handles for each clade
-        for cladeName in list(self._mappings.values()):
-            self._clade2fileHandle[cladeName] = open(outputPath+"/"+cladeName+".fas")
+
+        for cladeName in set(chain.from_iterable(self._mappings.values())):
+            self._clade2fileHandle[cladeName] = open(outputPath+"/"+cladeName+".fas", mode="w")
 
         # read complete alignment
         alignment = AlignIO.read(pathToCompleteFastaAlignment, "fasta", alphabet=Gapped(IUPAC.ExtendedIUPACProtein(), "-"))
         for record in alignment:
-            handle = self._clade2fileHandle[self._mappings[record.id]]
-            SeqIO.write(record, handle, "fasta")
+            if record.id in self._mappings:
+                for clade in self._mappings[record.id]:
+                    handle = self._clade2fileHandle[clade]
+                    SeqIO.write(record, handle, "fasta")
+            else:
+                print "Skipping "+record.id+" as it doesn't have a clade assignment"
 
         for cladeName in self._clade2fileHandle.keys():
             self._clade2fileHandle[cladeName].close()
