@@ -119,7 +119,7 @@ def main():
     for seq in listOfSeqRecords:
         gbkToWrite = pathToOutput+seq.id+".gbk"
         # Sort features in the seq object geographically (by start).
-        SeqFeatureSorter.geographic_sort(seq)
+        SeqFeatureSorter.geographic_with_pile_sort(seq)
         seqRecordAnnotator.annotateSeqFeatures(seq)
         # Run verifiers and add verification field output to the SimpleFeatWriter
         if clade_annotation is not None:
