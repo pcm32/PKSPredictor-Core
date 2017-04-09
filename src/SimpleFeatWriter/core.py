@@ -48,7 +48,7 @@ class SimpleFeatWriter(object):
             if self.use_verification:
                 verification = "N/A"
                 if Domain_Verifier.get_qualifier_key() in feature.qualifiers:
-                    verification = feature.qualifiers[Domain_Verifier.get_qualifier_key()]
+                    verification = str(feature.qualifiers[Domain_Verifier.get_qualifier_key()])
 
                 file2write.write("\t".join([str(start), str(end), str(evalue),
                                              str(score), str(ranking), str(region),

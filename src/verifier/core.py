@@ -14,6 +14,32 @@ class Domain_Verifier:
     def verify(self):
         pass
 
+class KSStarterOnlyVerifiers(Domain_Verifier):
+    """
+    Checks whether a KS domain marked as a starter in the annotation only happens
+    at the first KS position of the sequence.
+    """
+
+    def __init__(self, cladification_annotation, seqObj):
+        self.__cladification_annot = cladification_annotation
+        self.__seq_obj = seqObj
+
+    def verify(self):
+        for feature in self.__seq_obj.features:
+            if "subtype" in feature.qualifiers and feature.qualifiers["subtype"] == "KS":
+                # we only look at KS features
+                domains_to_be_found = list(
+                    self.__cladification_annot.get_domain_requirements(feature.qualifiers["name"]))
+                if "0" in domains_to_be_found:
+                    # if 0 is within the expected domains for this KS, then it means that this KS
+                    # is expected to be a starter only, and no KSs can be found before.
+                    # this check here only works at the single seq object.
+                    # TODO implement a check a the complete "operon" level.
+                    prev_seq = self.__seq_obj[1:feature.location.start - 1]
+                    for prev_feature in prev_seq.features:
+                        if "subtype" in prev_feature.qualifiers and feature.qualifiers["subtype"] == "KS":
+                            feature.qualifiers[self.get_qualifier_key()] = False
+
 
 class KSDomainVerifier(Domain_Verifier):
     """
@@ -45,7 +71,7 @@ class KSDomainVerifier(Domain_Verifier):
         previous_stack_end = -1
         current_preceding_module = None
         for feature in sorted_features:
-            if feature.qualifiers["subtype"] is "KS":
+            if "subtype" in feature.qualifiers and feature.qualifiers["subtype"] == "KS":
                 if previous_stack == 0:
                     '''
                     We have no previous stack recorded, we record this one and move on.
@@ -55,7 +81,11 @@ class KSDomainVerifier(Domain_Verifier):
                 elif previous_stack == feature.qualifiers["region"]:
                     '''
                     We are on a KS of the same stack/region just recorded, move on if it is the first,
-                    verify otherwise
+                    verify otherwise.
+
+                    TODO we are currently skipping the first KS stack, as we didn't have a previous KS
+                    to demarcate the current_preceding_module. However, for the first KS we can consider as a
+                    first preceding module whatever is upstream of the KS until the start of the sequence.
                     '''
                     if previous_stack > 1:
                         self.__run_check(feature, current_preceding_module)
@@ -72,11 +102,12 @@ class KSDomainVerifier(Domain_Verifier):
         if domains_to_be_found:
             for feature_preceding_module in current_preceding_module.features:
                 # afterwards we look at any remaining items in domains_to_be_found
-                domains_to_be_found.remove(feature_preceding_module.qualifiers["name"])
-        if len(domains_to_be_found)>0:
-            feature.qualifiers[self.get_qualifier_key()] = False
-        else:
-            feature.qualifiers[self.get_qualifier_key()] = True
+                if feature_preceding_module.qualifiers["name"] in domains_to_be_found:
+                    domains_to_be_found.remove(feature_preceding_module.qualifiers["name"])
+            if len(domains_to_be_found)>0:
+                feature.qualifiers[self.get_qualifier_key()] = False
+            else:
+                feature.qualifiers[self.get_qualifier_key()] = True
 
 
 class DH_PS_DomainVerifier(Domain_Verifier):
@@ -109,7 +140,7 @@ class DH_PS_DomainVerifier(Domain_Verifier):
                         found_confirmation = True
                     if sub_features.id is DH_PS_DomainVerifier.ps_confirmation_pattern and not found_ps_hint:
                         found_ps_hint = True
-                if feature.qualifiers["name"] is "DH":
+                if feature.qualifiers["name"] == "DH":
                     if found_confirmation and not found_ps_hint:
                         feature.qualifiers[self.get_qualifier_key()] = True
                     else:

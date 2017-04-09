@@ -136,7 +136,7 @@ class KSDomainRequirement(object):
     # TODO probably get rid of this object... is nothing but a list of domain identifiers.
     def __init__(self, domains):
         self.__requirements_list = list()
-        self.__requirements_list.extend(domains.split(";"))
+        self.__requirements_list.extend(filter(lambda a: a is not '', domains.split(";")))
 
     def get_requirements(self):
         return self.__requirements_list

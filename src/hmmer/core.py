@@ -222,6 +222,7 @@ class ModelAnnotator(object):
         A model annotator backed by a clade annotation object.
         :arg
         """
+        self.legacy_annot_map = {}
         for clade_id in clade_annotation.get_all_clade_ids():
             self.legacy_annot_map[clade_id] = clade_annotation.get_description(clade_id=clade_id)
 
