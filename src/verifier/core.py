@@ -99,6 +99,8 @@ class KSDomainVerifier(Domain_Verifier):
     def __run_check(self, feature, current_preceding_module):
         domains_to_be_found = list(self.__cladification_annot.get_domain_requirements(feature.qualifiers["name"]))
         # Only work if the list of domains to be verified is not empty
+        if "0" in domains_to_be_found:
+            domains_to_be_found.remove("0")
         if domains_to_be_found:
             for feature_preceding_module in current_preceding_module.features:
                 # afterwards we look at any remaining items in domains_to_be_found

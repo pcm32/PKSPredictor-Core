@@ -13,7 +13,7 @@ Clade_31	EE e-DB	e-double bonds	Clade_31.mol
 Clade_7	F Acetyl Starters	acetyl starter	Clade_7.mol					
 Clade_8	G b) non elongating	non-elongating	Clade_8.mol				yes	
 Clade_33	GG Amino Acids Glycine	glycine	Clade_33.mol		C;A			yes
-Clade_1	GNAT	GNAT starter	Clade_1.mol		GNAT			yes
+Clade_1	GNAT	GNAT starter	Clade_1.mol		0;GNAT			yes
 Clade_9	H Double bond or beta OH post PKS	α-β double bonds (or β-hydroxy)	Clade_9.mol					
 Clade_34	HH unusual branching	vinylogous chain branching	Clade_34.mol		B			yes
 Clade_35	II not assignable so far	N/A	Clade_35.mol					
