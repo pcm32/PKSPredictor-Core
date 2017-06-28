@@ -36,7 +36,7 @@ class HMMERSuite(object):
     
 class HMMERDomainHit(object):
     
-    def __init__(self,valid,score,bias,cevalue,ievalue,hmmStart,hmmStop,hmmBound,qstart,qstop,qBound):
+    def __init__(self,valid,score,bias,cevalue,ievalue,hmmStart,hmmStop,hmmBound,qstart,qstop,qBound, envStart, envStop):
         self.valid = valid
         self.score = float(score)
         self.bias = float(bias)
@@ -48,6 +48,8 @@ class HMMERDomainHit(object):
         self.qstart = int(qstart)
         self.qstop = int(qstop)
         self.qBound = qBound
+        self.envStart = int(envStart)
+        self.envStop = int(envStop)
         
     def getQueryStart(self):
         return self.qstart
@@ -188,9 +190,11 @@ class HMMERParse(object):
             alignStart = tokens[10]
             alignStop = tokens[11]
             alignBoundaries = tokens[12]
+            envStart = tokens[13]
+            envStop = tokens[14]
             
             hmmDomainHit = HMMERDomainHit(valid, score, bias, cEvalue, iEvalue, hmmStart, hmmStop, hmmBoundaries, 
-                                          qstart=alignStart, qstop=alignStop, qBound=alignBoundaries)
+                                          qstart=alignStart, qstop=alignStop, qBound=alignBoundaries, envStart=envStart, envStop=envStop)
             return hmmDomainHit
 
 
