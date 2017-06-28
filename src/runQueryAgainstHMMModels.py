@@ -123,9 +123,10 @@ def main():
         seqRecordAnnotator.annotateSeqFeatures(seq)
         # Run verifiers and add verification field output to the SimpleFeatWriter
         if clade_annotation is not None:
-            for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation, seqObj=seq),
-                                    DH_PS_DomainVerifier(seq)]:
-                domain_verifier.verify()
+            # TODO(ayedo): at some point re-enable this verification
+            # for domain_verifier in [KSDomainVerifier(cladififcation_annotation=clade_annotation, seqObj=seq),
+            #                         DH_PS_DomainVerifier(seq)]:
+            #     domain_verifier.verify()
             featWriter = SimpleFeatWriter(pathToOutput, 5, include_verification=True)
         else:
             featWriter = SimpleFeatWriter(pathToOutput, 5) # number is max ranking to print

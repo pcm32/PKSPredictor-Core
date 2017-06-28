@@ -56,12 +56,18 @@ class HMMERDomainHit(object):
     
     def getQueryStop(self):
         return self.qstop
-    
+
+    def getEnvStart(self):
+        return self.envStart
+
+    def getEnvStop(self):
+        return self.envStop
+
     def getIsValid(self):
         if self.valid == "!":
             return True
         return False
-            
+
     def getCEvalue(self):    
         return self.cevalue
     

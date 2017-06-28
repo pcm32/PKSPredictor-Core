@@ -198,7 +198,7 @@ class HMMERHitFeatureMarker(FeatureMarker):
         while model != None:
             domainHit = hmmParse.nextAlignmentResult()
             while domainHit != None:
-                domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
+                domain_loc = FeatureLocation(domainHit.getEnvStart(),domainHit.getEnvStop())
                 qual = {"evalue" : domainHit.getCEvalue(),
                         "score" : domainHit.getScore(),
                         "name" : model,
@@ -238,85 +238,24 @@ class CladeFeatureMarker(FeatureMarker):
         self.hmmerExec.runScan(query=indfastaPath, output=scanOutputPath, model=self.HMMModel)
         hmmResFH = open(scanOutputPath,'r')
         hmmParse = HMMERParse(hmmerScanFileHandle=hmmResFH, maxBestModels=10)
-        # First model hit needs to be of the general PKS, get those coordinates
-        model = hmmParse.goToNextModelAlignments()
-        if not (model == "AllTransKS"):
-            print "First hit is not the PKS General signal, skipping"
-            return
 
-        listOfGeneralModelDomains = list()
-        # A list of SeqFeatureContainer
-        domainHit = hmmParse.nextAlignmentResult()
-        print "Processing domains for AllTransKS"
-        while domainHit != None:
-            domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
-            qual = {"evalue" : domainHit.getCEvalue(),
-                        "score" : domainHit.getScore(),
-                        "name" : model}
-            domain_feat = SeqFeature(domain_loc, type="domain", strand=1, id=model)
-            # we could put scores and evalues in qualifiers field
-            listOfGeneralModelDomains.append(SeqFeatureContainer(domain_feat))
-            # seqAA.features.append(domain_feat)
-            domainHit = hmmParse.nextAlignmentResult()
-
-        print "Processing domains for Clades"
-        # For each subsequent model (the clades), if they fit within detected PKS general
-        # coordinates, store the clade specific hit as a SeqFeature of the SeqRecord
         model = hmmParse.goToNextModelAlignments()
         while model is not None:
             domainHit = hmmParse.nextAlignmentResult()
-            if self.skipClade.count(model) > 0:
-                print "Skipping model "+model
-                model = hmmParse.goToNextModelAlignments()
-                continue
-            print "Processing model "+model
             while domainHit is not None:
-                domain_loc = FeatureLocation(domainHit.getQueryStart(),domainHit.getQueryStop())
-                found = False
-                pickedSeqFeatCont = None # The general clade picked, where things are added later.
-                for seqFeatCont in listOfGeneralModelDomains:
-                    if seqFeatCont.generalLocationContainsCladeLoc(domain_loc):
-                        found = True
-                        pickedSeqFeatCont = seqFeatCont
-                        break
-                if not found:
-                    domainHit = hmmParse.nextAlignmentResult()
-                    break
-                if self.useCutOff and self.hmmerCutOffStore.hasEvalueCutoff(model):
-                    if self.hmmerCutOffStore.getCutEvalueCutOff(model) < float(domainHit.getCEvalue()):
-                        print "Skipping model "+model+" due to evalue cutoff."
-                        domainHit = hmmParse.nextAlignmentResult()
-                        break
+                domain_loc = FeatureLocation(domainHit.getEnvStart(), domainHit.getEnvStop())
+
                 qual = {"evalue": domainHit.getCEvalue(),
                         "score": domainHit.getScore(),
                         "name": model,
-                        "subtype": "KS"}
+                        "subtype": "KS" if model != "AllTransKS" else "General KS"}
+
                 domain_feat = SeqFeature(domain_loc, type="domain",
                                          strand=1, id=model, qualifiers=qual)
-                # seqAA.features.append(domain_feat)
-                pickedSeqFeatCont.addCladeSeqFeature(domain_feat)
+                seqAA.features.append(domain_feat)
                 domainHit = hmmParse.nextAlignmentResult()
-
             model = hmmParse.goToNextModelAlignments()
 
-        # The stack number refers to the lump of features marked under the same KS region (same hits for a single region).
-        featureStackNumber = 1
-        # Finally, add the seqRecord to the list of SeqRecords to be returned.
-        for seqFeatCont in listOfGeneralModelDomains:
-            if self.allDomains:
-                if seqFeatCont is not None:
-                    allClades = seqFeatCont.getAllCladesSorted()
-                    if allClades is not None:
-                        for cladeFeature in allClades:
-                            cladeFeature.qualifiers["region"] = featureStackNumber
-                            seqAA.features.append(cladeFeature)
-            else: # if we don't want all the clades, we only add the best one.
-                bestClade = seqFeatCont.getBestCladeSeqFeature()
-                if bestClade is not None:
-                    seqAA.features.append(bestClade)
-            featureStackNumber += 1
-
-    
 class SeqFeatureContainer(object):
     
     def __init__(self,generalSeqFeature):
