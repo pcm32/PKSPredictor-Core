@@ -22,7 +22,7 @@ class NRPS2Parser(object):
         start, stop = coords.split(":")
         domain_loc = FeatureLocation(int(start), int(stop))
         qual = {"score": score,
-                "name": singleClassPred,
+                "name": singleClassPred if singleClassPred != "N/A" else nearesStachehausCode,
                 "subtype": "NRPS2",
                 "tool": "NRPS2"}
         domain_feat = SeqFeature(domain_loc, type="domain",
