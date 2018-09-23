@@ -204,7 +204,7 @@ class CladificationAnnotationReader(object):
         line = fh.readline()
         while line is not None and len(line) > 1:
             (clade_id, desc, desc_tool, molfile, post_procs, verification_domains,
-             termination_rule, non_elongating, verification_mandatory) = line.split("\t")
+             termination_rule, non_elongating, verification_mandatory, termination_boundary) = line.split("\t")
 
             annotation.add_entry(clade_id, desc, desc_tool, molfile,
                                  post_processors=filter(None, post_procs.split(";")),

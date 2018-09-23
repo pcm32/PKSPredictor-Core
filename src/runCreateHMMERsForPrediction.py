@@ -72,11 +72,10 @@ if __name__ == '__main__':
     
     filesPathToHMMPress.remove("cat")
     # Delete files not necessary to prediction
-    for fileName in filesPathToHMMPress:
-        os.remove(fileName)
     for fileName in alignFilesNoSig:
         os.remove(fileName)
-    
+    for fileName in filesPathToHMMPress:
+        os.remove(fileName)
         
         
         
